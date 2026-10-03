@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Books - Library Management System</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+<aside class="sidebar">
+
+    <div class="sidebar-logo">
+        📚 <span>Library System</span>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="/dashboard">
+            🏠 Dashboard
+        </a>
+
+        <a href="/pages/books.html" class="active">
+            📚 Books
+        </a>
+
+        <a href="/pages/students.html">
+            👨‍🎓 Members
+        </a>
+
+        <a href="/pages/categories.html">
+            🗂️ Categories
+        </a>
+
+        <a href="/pages/issues.html">
+            🔄 Issue / Return
+        </a>
+
+        <a href="/reports">
+            📊 Reports
+        </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+        <button onclick="logout()" class="sidebar-logout">
+            🚪 Logout
+        </button>
+    </div>
+
+</aside>
+    <div class="dashboard">
+
+        <header class="topbar">
+            <div>
+                <h1>📚 Library Management System</h1>
+                <p>Book Management</p>
+            </div>
+
+            <button class="logout-btn" onclick="logout()">
+                Logout
+            </button>
+        </header>
+
+
+        <main class="dashboard-content">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <h2>Books</h2>
+
+                <button class="login-btn" style="width:auto; padding:10px 20px;" onclick="showBookForm()">
+                    + Add Book
+                </button>
+            </div>
+
+
+            <!-- Add Book Form -->
+
+            <div id="bookFormContainer" class="stat-card" style="display:none; margin-bottom:25px;">
+
+                <h2 style="margin-bottom:20px;">Add New Book</h2>
+
+                <form id="bookForm">
+
+                    <div class="form-group">
+                        <label for="title">Book Title</label>
+                        <input type="text" id="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="author">Author</label>
+                        <input type="text" id="author" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="isbn">ISBN</label>
+                        <input type="text" id="isbn">
+                    </div>
+<div class="form-group">
+    <label for="category">Category</label>
+    <select id="category">
+        <option value="">Select Category</option>
+    </select>
+</div>
+                    <div class="form-group">
+                        <label for="publisher">Publisher</label>
+                        <input type="text" id="publisher">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="total_copies">Total Copies</label>
+                        <input type="number" id="total_copies" min="1" value="1" required>
+                    </div>
+
+                    <button type="submit" class="login-btn">
+                        Save Book
+                    </button>
+
+                    <button type="button" onclick="hideBookForm()"
+                        style="margin-top:10px; width:100%; padding:12px; border:none; border-radius:6px; cursor:pointer;">
+                        Cancel
+                    </button>
+
+                    <p id="formMessage" class="error-message"></p>
+
+                </form>
+
+            </div>
+
+
+            <!-- Search -->
+
+            <div class="stat-card" style="margin-bottom:25px;">
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search by book title or author..."
+                    style="width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:6px;"
+                >
+
+            </div>
+
+
+            <!-- Books Table -->
+
+            <div class="stat-card">
+
+                <div style="overflow-x:auto;">
+
+                    <table style="width:100%; border-collapse:collapse;">
+
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding:12px;">ID</th>
+                                <th style="text-align:left; padding:12px;">Title</th>
+                                <th style="text-align:left; padding:12px;">Author</th>
+                                <th style="text-align:left; padding:12px;">Category</th>
+
+                                <th style="text-align:left; padding:12px;">ISBN</th>
+                                <th style="text-align:left; padding:12px;">Publisher</th>
+                                <th style="text-align:left; padding:12px;">Total</th>
+                                <th style="text-align:left; padding:12px;">Available</th>
+                                <th style="text-align:left; padding:12px;">Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="booksTableBody">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+<script>
+
+let books = [];
+
+
+async function loadBooks() {
+
+    try {
+
+        const response = await fetch("/api/books");
+
+        if (!response.ok) {
+            throw new Error("Failed to load books");
+        }
+
+        books = await response.json();
+
+        displayBooks(books);
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("booksTableBody").innerHTML =
+            `<tr>
+                <td colspan="9" style="padding:20px; text-align:center;">
+                    Unable to load books.
+                </td>
+            </tr>`;
+    }
+}
+
+
+function displayBooks(bookList) {
+
+    const tbody = document.getElementById("booksTableBody");
+
+    tbody.innerHTML = "";
+
+    if (bookList.length === 0) {
+
+        tbody.innerHTML =
+            `<tr>
+                <td colspan="9" style="padding:20px; text-align:center;">
+                    No books found.
+                </td>
+            </tr>`;
+
+        return;
+    }
+
+
+    bookList.forEach(book => {
+
+        const row = document.createElement("tr");
+
+  row.innerHTML = `
+    <td style="padding:12px;">${book.id}</td>
+
+    <td style="padding:12px;">${book.title}</td>
+
+    <td style="padding:12px;">${book.author}</td>
+<td style="padding:12px;">${book.category_name || "-"}</td>
+
+    <td style="padding:12px;">${book.isbn || "-"}</td>
+
+    <td style="padding:12px;">${book.publisher || "-"}</td>
+
+    <td style="padding:12px;">${book.total_copies}</td>
+
+    <td style="padding:12px;">${book.available_copies}</td>
+
+    <td style="padding:12px;">
+
+        <button
+            onclick="editBook(${book.id})"
+            style="background:#2563eb;color:white;border:none;padding:7px 12px;border-radius:5px;cursor:pointer;margin-right:5px;">
+            Edit
+        </button>
+
+        <button
+            onclick="deleteBook(${book.id})"
+            style="background:#dc2626;color:white;border:none;padding:7px 12px;border-radius:5px;cursor:pointer;">
+            Delete
+        </button>
+
+    </td>
+`;
+
+        tbody.appendChild(row);
+
+    });
+}
+
+
+document.getElementById("bookForm").addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+  const bookData = {
+
+    title: document.getElementById("title").value,
+
+    author: document.getElementById("author").value,
+
+    isbn: document.getElementById("isbn").value,
+
+    category_id: document.getElementById("category").value || null,
+
+    publisher: document.getElementById("publisher").value,
+
+    total_copies: Number(
+        document.getElementById("total_copies").value
+    )
+
+};
+
+
+    try {
+
+        const response = await fetch("/api/books", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(bookData)
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            document.getElementById("formMessage").textContent =
+                data.message || "Unable to add book.";
+
+            return;
+        }
+
+
+        document.getElementById("bookForm").reset();
+
+        document.getElementById("total_copies").value = 1;
+
+        hideBookForm();
+
+        loadBooks();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("formMessage").textContent =
+            "Server error.";
+
+    }
+
+});
+
+function editBook(id) {
+
+    const book = books.find(book => book.id === id);
+
+    if (!book) {
+        return;
+    }
+
+    const title = prompt("Book Title:", book.title);
+    if (title === null) return;
+
+    const author = prompt("Author:", book.author);
+    if (author === null) return;
+
+    const isbn = prompt("ISBN:", book.isbn || "");
+    if (isbn === null) return;
+const categoryId = prompt(
+    "Category ID:",
+    book.category_id || ""
+);
+
+if (categoryId === null) return;
+    const publisher = prompt("Publisher:", book.publisher || "");
+    if (publisher === null) return;
+
+    const totalCopies = prompt(
+        "Total Copies:",
+        book.total_copies
+    );
+
+    if (totalCopies === null) return;
+
+  updateBook(
+    id,
+    title,
+    author,
+    isbn,
+    categoryId,
+    publisher,
+    Number(totalCopies)
+);
+}
+
+
+async function updateBook(
+    id,
+    title,
+    author,
+    isbn,
+    category_id,
+    publisher,
+    total_copies
+) {
+
+    try {
+
+        const response = await fetch(`/api/books/${id}`, {
+
+            method: "PUT",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+           body: JSON.stringify({
+    title,
+    author,
+    isbn,
+    category_id: category_id || null,
+    publisher,
+    total_copies
+})
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            alert(data.message || "Unable to update book.");
+            return;
+        }
+
+        loadBooks();
+
+    } catch (error) {
+
+        console.error(error);
+        alert("Server error.");
+
+    }
+}
+async function deleteBook(id) {
+
+    if (!confirm("Are you sure you want to delete this book?")) {
+        return;
+    }
+
+
+    try {
+
+        const response = await fetch(`/api/books/${id}`, {
+            method: "DELETE"
+        });
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            alert(data.message || "Unable to delete book.");
+
+            return;
+        }
+
+
+        loadBooks();
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server error.");
+
+    }
+
+}
+
+
+document.getElementById("searchInput").addEventListener("input", function() {
+
+    const search = this.value.toLowerCase();
+
+    const filteredBooks = books.filter(book =>
+        book.title.toLowerCase().includes(search) ||
+        book.author.toLowerCase().includes(search)
+    );
+
+    displayBooks(filteredBooks);
+
+});
+
+
+function showBookForm() {
+
+    document.getElementById("bookFormContainer").style.display = "block";
+
+}
+
+
+function hideBookForm() {
+
+    document.getElementById("bookFormContainer").style.display = "none";
+
+    document.getElementById("formMessage").textContent = "";
+
+}
+
+
+async function logout() {
+
+    await fetch("/logout", {
+        method: "POST"
+    });
+
+    window.location.href = "/";
+
+}
+
+async function loadCategories() {
+
+    try {
+
+        const response = await fetch("/api/categories");
+
+        if (!response.ok) {
+            throw new Error("Failed to load categories");
+        }
+
+        const categories = await response.json();
+
+        const select = document.getElementById("category");
+
+        select.innerHTML =
+            '<option value="">Select Category</option>';
+
+        categories.forEach(category => {
+
+            const option = document.createElement("option");
+
+            option.value = category.id;
+            option.textContent = category.name;
+
+            select.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error("Category loading error:", error);
+
+    }
+}
+loadCategories();
+
+loadBooks();
+
+</script>
+</body>
+</html>

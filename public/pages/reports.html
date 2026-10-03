@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reports - Library Management System</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+<aside class="sidebar">
+
+    <div class="sidebar-logo">
+        📚 <span>Library System</span>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="/dashboard">
+            🏠 Dashboard
+        </a>
+
+        <a href="/pages/books.html" >
+            📚 Books
+        </a>
+
+        <a href="/pages/students.html">
+            👨‍🎓 Members
+        </a>
+
+        <a href="/pages/categories.html">
+            🗂️ Categories
+        </a>
+
+        <a href="/pages/issues.html">
+            🔄 Issue / Return
+        </a>
+
+       <a href="/reports" class="active">
+    📊 Reports
+</a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+        <button onclick="logout()" class="sidebar-logout">
+            🚪 Logout
+        </button>
+    </div>
+
+</aside>
+<div class="dashboard">
+
+    <header class="topbar">
+
+        <div>
+            <h1>📚 Library Management System</h1>
+            <p>Library Reports</p>
+        </div>
+
+        <button class="logout-btn" onclick="logout()">
+            Logout
+        </button>
+
+    </header>
+
+    <main class="dashboard-content">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+
+            <h2>Reports</h2>
+
+            <button
+                class="login-btn"
+                style="width:auto; padding:10px 20px;"
+                onclick="window.print()">
+                🖨️ Print Report
+            </button>
+
+        </div>
+
+
+        <!-- Summary Cards -->
+
+        <div class="stats-grid" id="summaryCards">
+
+            <div class="stat-card">
+                <h3>Total Books</h3>
+                <p id="totalBooks">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Available Books</h3>
+                <p id="availableBooks">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Issued Books</h3>
+                <p id="issuedBooks">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Total Members</h3>
+                <p id="totalMembers">0</p>
+            </div>
+
+            <div class="stat-card">
+                <h3>Total Fines</h3>
+                <p id="totalFines">₹0.00</p>
+            </div>
+
+        </div>
+
+
+        <!-- Currently Issued Books -->
+
+        <div class="stat-card" style="margin-top:25px;">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+
+                <h2>Currently Issued Books</h2>
+
+                <input
+                    type="text"
+                    id="currentSearch"
+                    placeholder="Search..."
+                    style="width:250px; padding:10px; border:1px solid #cbd5e1; border-radius:6px;"
+                >
+
+            </div>
+
+            <div style="overflow-x:auto;">
+
+                <table style="width:100%; border-collapse:collapse;">
+
+                    <thead>
+                        <tr>
+
+                            <th style="text-align:left; padding:12px;">Book</th>
+
+                            <th style="text-align:left; padding:12px;">Member</th>
+
+                            <th style="text-align:left; padding:12px;">Issue Date</th>
+
+                            <th style="text-align:left; padding:12px;">Due Date</th>
+
+                            <th style="text-align:left; padding:12px;">Fine</th>
+
+                            <th style="text-align:left; padding:12px;">Status</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody id="currentIssuesBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+
+        <!-- Issue History -->
+
+        <div class="stat-card" style="margin-top:25px;">
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+
+                <h2>Issue & Return History</h2>
+
+                <input
+                    type="text"
+                    id="historySearch"
+                    placeholder="Search..."
+                    style="width:250px; padding:10px; border:1px solid #cbd5e1; border-radius:6px;"
+                >
+
+            </div>
+
+            <div style="overflow-x:auto;">
+
+                <table style="width:100%; border-collapse:collapse;">
+
+                    <thead>
+                        <tr>
+
+                            <th style="text-align:left; padding:12px;">Book</th>
+
+                            <th style="text-align:left; padding:12px;">Member</th>
+
+                            <th style="text-align:left; padding:12px;">Issue Date</th>
+
+                            <th style="text-align:left; padding:12px;">Due Date</th>
+
+                            <th style="text-align:left; padding:12px;">Return Date</th>
+
+                            <th style="text-align:left; padding:12px;">Fine</th>
+
+                            <th style="text-align:left; padding:12px;">Status</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody id="historyBody">
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+
+<script>
+
+let currentIssues = [];
+let issueHistory = [];
+
+
+// Load dashboard statistics
+
+async function loadSummary() {
+
+    try {
+
+        const response = await fetch("/api/dashboard");
+
+        if (!response.ok) {
+            throw new Error("Unable to load dashboard data");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("totalBooks").textContent =
+            data.totalBooks ?? 0;
+
+        document.getElementById("availableBooks").textContent =
+            data.availableBooks ?? 0;
+
+        document.getElementById("issuedBooks").textContent =
+            data.issuedBooks ?? 0;
+
+        document.getElementById("totalMembers").textContent =
+            data.totalMembers ?? 0;
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+}
+
+
+// Load currently issued books
+
+async function loadCurrentIssues() {
+
+    try {
+
+        const response = await fetch("/api/issues");
+
+        if (!response.ok) {
+            throw new Error("Unable to load current issues");
+        }
+
+        currentIssues = await response.json();
+
+        displayCurrentIssues(currentIssues);
+
+        calculateTotalFines();
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("currentIssuesBody").innerHTML =
+            `<tr>
+                <td colspan="6" style="padding:20px; text-align:center;">
+                    Unable to load current issues.
+                </td>
+            </tr>`;
+
+    }
+}
+
+
+// Display current issues
+
+function displayCurrentIssues(issueList) {
+
+    const tbody =
+        document.getElementById("currentIssuesBody");
+
+    tbody.innerHTML = "";
+
+    if (issueList.length === 0) {
+
+        tbody.innerHTML =
+            `<tr>
+                <td colspan="6" style="padding:20px; text-align:center;">
+                    No books are currently issued.
+                </td>
+            </tr>`;
+
+        return;
+    }
+
+    issueList.forEach(issue => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td style="padding:12px;">
+                ${issue.book_title || "-"}
+            </td>
+
+            <td style="padding:12px;">
+                ${issue.student_name || "-"}
+            </td>
+
+            <td style="padding:12px;">
+                ${formatDate(issue.issue_date)}
+            </td>
+
+            <td style="padding:12px;">
+                ${formatDate(issue.due_date)}
+            </td>
+
+            <td style="padding:12px;">
+                ₹${Number(issue.fine || 0).toFixed(2)}
+            </td>
+
+            <td style="padding:12px;">
+                ${issue.status || "issued"}
+            </td>
+
+        `;
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+
+// Load complete history
+
+async function loadHistory() {
+
+    try {
+
+        const response =
+            await fetch("/api/issues/history");
+
+        if (!response.ok) {
+            throw new Error("Unable to load history");
+        }
+
+        issueHistory = await response.json();
+
+        displayHistory(issueHistory);
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById("historyBody").innerHTML =
+            `<tr>
+                <td colspan="7" style="padding:20px; text-align:center;">
+                    Unable to load issue history.
+                </td>
+            </tr>`;
+
+    }
+}
+
+
+// Display history
+
+function displayHistory(historyList) {
+
+    const tbody =
+        document.getElementById("historyBody");
+
+    tbody.innerHTML = "";
+
+    if (historyList.length === 0) {
+
+        tbody.innerHTML =
+            `<tr>
+                <td colspan="7" style="padding:20px; text-align:center;">
+                    No issue history found.
+                </td>
+            </tr>`;
+
+        return;
+    }
+
+    historyList.forEach(issue => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td style="padding:12px;">
+                ${issue.book_title || "-"}
+            </td>
+
+            <td style="padding:12px;">
+                ${issue.student_name || "-"}
+            </td>
+
+            <td style="padding:12px;">
+                ${formatDate(issue.issue_date)}
+            </td>
+
+            <td style="padding:12px;">
+                ${formatDate(issue.due_date)}
+            </td>
+
+            <td style="padding:12px;">
+                ${issue.return_date
+                    ? formatDate(issue.return_date)
+                    : "-"
+                }
+            </td>
+
+            <td style="padding:12px;">
+                ₹${Number(issue.fine || 0).toFixed(2)}
+            </td>
+
+            <td style="padding:12px;">
+                ${issue.status || "-"}
+            </td>
+
+        `;
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+
+// Calculate total fines
+
+function calculateTotalFines() {
+
+    let total = 0;
+
+    currentIssues.forEach(issue => {
+
+        total += Number(issue.fine || 0);
+
+    });
+
+    issueHistory.forEach(issue => {
+
+        if (issue.return_date) {
+            total += Number(issue.fine || 0);
+        }
+
+    });
+
+    document.getElementById("totalFines").textContent =
+        "₹" + total.toFixed(2);
+
+}
+
+
+// Current issue search
+
+document.getElementById("currentSearch")
+.addEventListener("input", function() {
+
+    const search =
+        this.value.toLowerCase();
+
+    const filtered =
+        currentIssues.filter(issue =>
+
+            (issue.book_title || "")
+                .toLowerCase()
+                .includes(search)
+
+            ||
+
+            (issue.student_name || "")
+                .toLowerCase()
+                .includes(search)
+
+        );
+
+    displayCurrentIssues(filtered);
+
+});
+
+
+// History search
+
+document.getElementById("historySearch")
+.addEventListener("input", function() {
+
+    const search =
+        this.value.toLowerCase();
+
+    const filtered =
+        issueHistory.filter(issue =>
+
+            (issue.book_title || "")
+                .toLowerCase()
+                .includes(search)
+
+            ||
+
+            (issue.student_name || "")
+                .toLowerCase()
+                .includes(search)
+
+        );
+
+    displayHistory(filtered);
+
+});
+
+
+// Format date
+
+function formatDate(date) {
+
+    if (!date) {
+        return "-";
+    }
+
+    return new Date(date).toLocaleDateString("en-IN");
+
+}
+
+
+// Logout
+
+async function logout() {
+
+    await fetch("/logout", {
+        method: "POST"
+    });
+
+    window.location.href = "/";
+
+}
+
+
+// Initial loading
+
+async function loadReports() {
+
+    await loadSummary();
+
+    await loadCurrentIssues();
+
+    await loadHistory();
+
+}
+
+loadReports();
+
+</script>
+</body>
+</html>

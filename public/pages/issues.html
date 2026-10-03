@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue & Return - Library Management</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        body {
+            background: #f4f6f9;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+       .container {
+    width: calc(100% - 300px);
+    max-width: none;
+    margin: 30px 30px 30px 270px;
+    box-sizing: border-box;
+}
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+        }
+
+        .nav-buttons a {
+            text-decoration: none;
+            margin-left: 8px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .return-btn {
+            background: #16a34a;
+            color: white;
+        }
+
+        .history-btn {
+            background: #6b7280;
+            color: white;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+        }
+
+        .status-issued {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .status-returned {
+            color: #16a34a;
+            font-weight: bold;
+        }
+
+        .fine {
+            font-weight: bold;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            max-width: 400px;
+        }
+
+        @media (max-width: 800px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            .container {
+    width: calc(100% - 100px);
+    margin: 30px 20px 30px 80px;
+}
+        }
+    </style>
+</head>
+
+<body>
+<aside class="sidebar">
+
+    <div class="sidebar-logo">
+        📚 <span>Library System</span>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="/dashboard">
+            🏠 Dashboard
+        </a>
+
+        <a href="/pages/books.html">
+            📚 Books
+        </a>
+
+        <a href="/pages/students.html">
+            👨‍🎓 Members
+        </a>
+
+        <a href="/pages/categories.html">
+            🗂️ Categories
+        </a>
+
+<a href="/pages/issues.html" class="active">
+    🔄 Issue / Return
+</a>
+        <a href="/reports">
+            📊 Reports
+        </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+        <button onclick="logout()" class="sidebar-logout">
+            🚪 Logout
+        </button>
+    </div>
+
+</aside>
+<div class="container">
+
+    <div class="top-bar">
+        <h1>Issue & Return</h1>
+
+        <div class="nav-buttons">
+            <a href="/dashboard">
+                <button>Dashboard</button>
+            </a>
+
+            <a href="/pages/books.html">
+                <button>Books</button>
+            </a>
+
+            <a href="/pages/students.html">
+                <button>Members</button>
+            </a>
+        </div>
+    </div>
+
+
+    <!-- ISSUE BOOK -->
+    <div class="card">
+
+        <h2>Issue Book</h2>
+
+        <form id="issueForm">
+
+            <div class="form-grid">
+
+                <div>
+                    <label for="book">Book</label>
+
+                    <select id="book" required>
+                        <option value="">Select Book</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="student">Member</label>
+
+                    <select id="student" required>
+                        <option value="">Select Member</option>
+                    </select>
+                </div>
+
+
+                <div>
+                    <label for="dueDate">Due Date</label>
+
+                    <input
+                        type="date"
+                        id="dueDate"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <br>
+
+            <button
+                type="submit"
+                class="primary-btn"
+            >
+                Issue Book
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- CURRENTLY ISSUED -->
+    <div class="card">
+
+        <h2>Currently Issued Books</h2>
+
+        <div class="search-box">
+            <input
+                type="text"
+                id="currentSearch"
+                placeholder="Search book or member..."
+            >
+        </div>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Member</th>
+                        <th>Issue Date</th>
+                        <th>Due Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="issuesTableBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- ISSUE HISTORY -->
+    <div class="card">
+
+        <h2>Issue History</h2>
+
+        <div class="search-box">
+            <input
+                type="text"
+                id="historySearch"
+                placeholder="Search book, member or status..."
+            >
+        </div>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Book</th>
+                        <th>Member</th>
+                        <th>Issue Date</th>
+                        <th>Due Date</th>
+                        <th>Return Date</th>
+                        <th>Fine</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="historyTableBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let currentIssues = [];
+let issueHistory = [];
+
+
+// Set default due date to 14 days from today
+function setDefaultDueDate() {
+
+    const date = new Date();
+
+    date.setDate(date.getDate() + 14);
+
+    const year = date.getFullYear();
+
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+
+    const day = String(date.getDate()).padStart(2, "0");
+
+    document.getElementById("dueDate").value =
+        `${year}-${month}-${day}`;
+}
+
+
+// Load books
+async function loadBooks() {
+
+    try {
+
+        const response = await fetch("/api/books");
+
+        const books = await response.json();
+
+        const select = document.getElementById("book");
+
+        select.innerHTML =
+            '<option value="">Select Book</option>';
+
+        books.forEach(book => {
+
+            const option = document.createElement("option");
+
+            option.value = book.id;
+
+            option.textContent =
+                `${book.title} (${book.available_copies} available)`;
+
+            if (book.available_copies <= 0) {
+                option.disabled = true;
+            }
+
+            select.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Unable to load books.");
+
+    }
+}
+
+
+// Load students
+async function loadStudents() {
+
+    try {
+
+        const response = await fetch("/api/students");
+
+        const students = await response.json();
+
+        const select = document.getElementById("student");
+
+        select.innerHTML =
+            '<option value="">Select Member</option>';
+
+        students.forEach(student => {
+
+            const option = document.createElement("option");
+
+            option.value = student.id;
+
+            option.textContent =
+                `${student.student_id} - ${student.name}`;
+
+            select.appendChild(option);
+
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Unable to load members.");
+
+    }
+}
+
+
+// Load currently issued books
+async function loadIssues() {
+
+    try {
+
+        const response = await fetch("/api/issues");
+
+        currentIssues = await response.json();
+
+        displayCurrentIssues(currentIssues);
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Unable to load issued books.");
+
+    }
+}
+
+
+// Display currently issued books
+function displayCurrentIssues(issues) {
+
+    const tbody =
+        document.getElementById("issuesTableBody");
+
+    tbody.innerHTML = "";
+
+    if (issues.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="empty-message">
+                    No books are currently issued.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    issues.forEach(issue => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td>${escapeHtml(issue.book_title)}</td>
+
+            <td>
+                ${escapeHtml(issue.student_code)}
+                - ${escapeHtml(issue.student_name)}
+            </td>
+
+            <td>${formatDate(issue.issue_date)}</td>
+
+            <td>${formatDate(issue.due_date)}</td>
+
+            <td>
+                <button
+                    class="return-btn"
+                    onclick="returnBook(${issue.id})"
+                >
+                    Return
+                </button>
+            </td>
+
+        `;
+
+        tbody.appendChild(row);
+
+    });
+}
+
+
+// Load complete history
+async function loadHistory() {
+
+    try {
+
+        const response =
+            await fetch("/api/issues/history");
+
+        if (!response.ok) {
+            throw new Error("Unable to load history");
+        }
+
+        issueHistory = await response.json();
+
+        displayHistory(issueHistory);
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Unable to load issue history.");
+
+    }
+}
+
+
+// Display history
+function displayHistory(history) {
+
+    const tbody =
+        document.getElementById("historyTableBody");
+
+    tbody.innerHTML = "";
+
+    if (history.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="empty-message">
+                    No issue history available.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    history.forEach(issue => {
+
+        const statusClass =
+            issue.status === "returned"
+                ? "status-returned"
+                : "status-issued";
+
+
+        const statusText =
+            issue.status === "returned"
+                ? "Returned"
+                : "Issued";
+
+
+        const returnDate =
+            issue.return_date
+                ? formatDate(issue.return_date)
+                : "-";
+
+
+        const fine =
+            Number(issue.fine || 0);
+
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+
+            <td>${escapeHtml(issue.book_title)}</td>
+
+            <td>
+                ${escapeHtml(issue.student_code)}
+                - ${escapeHtml(issue.student_name)}
+            </td>
+
+            <td>${formatDate(issue.issue_date)}</td>
+
+            <td>${formatDate(issue.due_date)}</td>
+
+            <td>${returnDate}</td>
+
+            <td class="fine">
+                ₹${fine.toFixed(2)}
+            </td>
+
+            <td class="${statusClass}">
+                ${statusText}
+            </td>
+
+        `;
+
+        tbody.appendChild(row);
+
+    });
+}
+
+
+// Issue book
+document.getElementById("issueForm")
+.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+
+    const book_id =
+        document.getElementById("book").value;
+
+    const student_id =
+        document.getElementById("student").value;
+
+    const due_date =
+        document.getElementById("dueDate").value;
+
+
+    try {
+
+        const response = await fetch("/api/issues", {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                book_id,
+                student_id,
+                due_date
+            })
+
+        });
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            alert(data.message || "Unable to issue book.");
+
+            return;
+        }
+
+
+        alert("Book issued successfully.");
+
+        document.getElementById("issueForm").reset();
+
+        setDefaultDueDate();
+
+        await loadBooks();
+
+        await loadIssues();
+
+        await loadHistory();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server error.");
+
+    }
+
+});
+
+
+// Return book
+async function returnBook(id) {
+
+    const confirmed =
+        confirm("Are you sure you want to return this book?");
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(`/api/issues/${id}/return`, {
+                method: "PUT"
+            });
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Unable to return book."
+            );
+
+            return;
+        }
+
+
+        alert(
+            `Book returned successfully.\n\n` +
+            `Late days: ${data.lateDays}\n` +
+            `Fine: ₹${Number(data.fine).toFixed(2)}`
+        );
+
+
+        await loadBooks();
+
+        await loadIssues();
+
+        await loadHistory();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server error.");
+
+    }
+
+}
+
+
+// Current issues search
+document
+.getElementById("currentSearch")
+.addEventListener("input", function() {
+
+    const search =
+        this.value.toLowerCase().trim();
+
+
+    const filtered =
+        currentIssues.filter(issue => {
+
+            return (
+                issue.book_title
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                issue.student_name
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                issue.student_code
+                    .toLowerCase()
+                    .includes(search)
+            );
+
+        });
+
+
+    displayCurrentIssues(filtered);
+
+});
+
+
+// History search
+document
+.getElementById("historySearch")
+.addEventListener("input", function() {
+
+    const search =
+        this.value.toLowerCase().trim();
+
+
+    const filtered =
+        issueHistory.filter(issue => {
+
+            return (
+                issue.book_title
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                issue.student_name
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                issue.student_code
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                issue.status
+                    .toLowerCase()
+                    .includes(search)
+            );
+
+        });
+
+
+    displayHistory(filtered);
+
+});
+
+
+// Format date
+function formatDate(dateString) {
+
+    if (!dateString) {
+        return "-";
+    }
+
+    const date =
+        new Date(dateString);
+
+    return date.toLocaleDateString("en-IN");
+}
+
+
+// Basic HTML escaping
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+// Initial loading
+setDefaultDueDate();
+
+loadBooks();
+
+loadStudents();
+
+loadIssues();
+
+loadHistory();
+
+</script>
+</body>
+</html>

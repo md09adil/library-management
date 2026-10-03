@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Categories - Library Management</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+
+    <style>
+        body {
+            background: #f4f6f9;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1000px;
+            margin: 30px auto;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .top-bar h1 {
+            margin: 0;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        button {
+            padding: 9px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .edit-btn {
+            background: #f59e0b;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .delete-btn {
+            background: #dc2626;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #6b7280;
+            color: white;
+            margin-left: 5px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #f1f5f9;
+        }
+
+        .search-box {
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            max-width: 400px;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #777;
+            padding: 20px;
+        }
+
+        @media (max-width: 700px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<aside class="sidebar">
+
+    <div class="sidebar-logo">
+        📚 <span>Library System</span>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="/dashboard">
+            🏠 Dashboard
+        </a>
+
+        <a href="/pages/books.html">
+            📚 Books
+        </a>
+
+        <a href="/pages/students.html">
+            👨‍🎓 Members
+        </a>
+<a href="/pages/categories.html" class="active">
+    🗂️ Categories
+</a>
+
+        <a href="/pages/issues.html">
+            🔄 Issue / Return
+        </a>
+
+        <a href="/reports">
+            📊 Reports
+        </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+        <button onclick="logout()" class="sidebar-logout">
+            🚪 Logout
+        </button>
+    </div>
+
+</aside>
+<div class="container">
+
+    <div class="top-bar">
+
+        <h1>Book Categories</h1>
+
+        <div>
+            <a href="/dashboard">
+                <button>Dashboard</button>
+            </a>
+
+            <a href="/pages/books.html">
+                <button>Books</button>
+            </a>
+        </div>
+
+    </div>
+
+
+    <!-- ADD / EDIT CATEGORY -->
+
+    <div class="card">
+
+        <h2 id="formTitle">Add Category</h2>
+
+        <form id="categoryForm">
+
+            <input
+                type="hidden"
+                id="categoryId"
+            >
+
+            <div class="form-grid">
+
+                <div>
+                    <label for="categoryName">
+                        Category Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="categoryName"
+                        placeholder="Example: Computer Science"
+                        required
+                    >
+                </div>
+
+
+                <div>
+                    <label for="categoryDescription">
+                        Description
+                    </label>
+
+                    <textarea
+                        id="categoryDescription"
+                        placeholder="Category description"
+                    ></textarea>
+                </div>
+
+            </div>
+
+            <br>
+
+            <button
+                type="submit"
+                class="primary-btn"
+                id="saveButton"
+            >
+                Add Category
+            </button>
+
+            <button
+                type="button"
+                class="cancel-btn"
+                id="cancelButton"
+                style="display:none;"
+                onclick="cancelEdit()"
+            >
+                Cancel
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- CATEGORY LIST -->
+
+    <div class="card">
+
+        <h2>Categories</h2>
+
+        <div class="search-box">
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search categories..."
+            >
+
+        </div>
+
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+                <tbody id="categoriesTableBody"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+let categories = [];
+
+
+// Load categories
+async function loadCategories() {
+
+    try {
+
+        const response =
+            await fetch("/api/categories");
+
+        if (!response.ok) {
+            throw new Error("Unable to load categories");
+        }
+
+        categories = await response.json();
+
+        displayCategories(categories);
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Unable to load categories.");
+
+    }
+}
+
+
+// Display categories
+function displayCategories(list) {
+
+    const tbody =
+        document.getElementById("categoriesTableBody");
+
+    tbody.innerHTML = "";
+
+
+    if (list.length === 0) {
+
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="empty-message">
+                    No categories found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    list.forEach(category => {
+
+        const row =
+            document.createElement("tr");
+
+
+        row.innerHTML = `
+
+            <td>${category.id}</td>
+
+            <td>
+                ${escapeHtml(category.name)}
+            </td>
+
+            <td>
+                ${escapeHtml(category.description || "-")}
+            </td>
+
+            <td>
+
+                <button
+                    class="edit-btn"
+                    onclick="editCategory(${category.id})"
+                >
+                    Edit
+                </button>
+
+                <button
+                    class="delete-btn"
+                    onclick="deleteCategory(${category.id})"
+                >
+                    Delete
+                </button>
+
+            </td>
+
+        `;
+
+
+        tbody.appendChild(row);
+
+    });
+
+}
+
+
+// Add / Update category
+document
+.getElementById("categoryForm")
+.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+
+    const id =
+        document.getElementById("categoryId").value;
+
+    const name =
+        document.getElementById("categoryName").value.trim();
+
+    const description =
+        document.getElementById("categoryDescription").value.trim();
+
+
+    if (!name) {
+
+        alert("Please enter a category name.");
+
+        return;
+    }
+
+
+    const isEditing = Boolean(id);
+
+
+    try {
+
+        const response = await fetch(
+            isEditing
+                ? `/api/categories/${id}`
+                : "/api/categories",
+            {
+                method: isEditing ? "PUT" : "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    name,
+                    description
+                })
+            }
+        );
+
+
+        const data = await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Unable to save category."
+            );
+
+            return;
+        }
+
+
+        alert(
+            isEditing
+                ? "Category updated successfully."
+                : "Category added successfully."
+        );
+
+
+        cancelEdit();
+
+        loadCategories();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server error.");
+
+    }
+
+});
+
+
+// Edit category
+function editCategory(id) {
+
+    const category =
+        categories.find(item => item.id === id);
+
+
+    if (!category) {
+        return;
+    }
+
+
+    document.getElementById("categoryId").value =
+        category.id;
+
+    document.getElementById("categoryName").value =
+        category.name;
+
+    document.getElementById("categoryDescription").value =
+        category.description || "";
+
+
+    document.getElementById("formTitle").textContent =
+        "Edit Category";
+
+    document.getElementById("saveButton").textContent =
+        "Update Category";
+
+    document.getElementById("cancelButton").style.display =
+        "inline-block";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+// Cancel edit
+function cancelEdit() {
+
+    document.getElementById("categoryForm").reset();
+
+    document.getElementById("categoryId").value = "";
+
+    document.getElementById("formTitle").textContent =
+        "Add Category";
+
+    document.getElementById("saveButton").textContent =
+        "Add Category";
+
+    document.getElementById("cancelButton").style.display =
+        "none";
+
+}
+
+
+// Delete category
+async function deleteCategory(id) {
+
+    const category =
+        categories.find(item => item.id === id);
+
+
+    if (!category) {
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            `Delete category "${category.name}"?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(`/api/categories/${id}`, {
+                method: "DELETE"
+            });
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                data.message ||
+                "Unable to delete category."
+            );
+
+            return;
+        }
+
+
+        alert("Category deleted successfully.");
+
+        loadCategories();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert("Server error.");
+
+    }
+
+}
+
+
+// Search
+document
+.getElementById("searchInput")
+.addEventListener("input", function() {
+
+    const search =
+        this.value.toLowerCase().trim();
+
+
+    const filtered =
+        categories.filter(category => {
+
+            return (
+                category.name
+                    .toLowerCase()
+                    .includes(search)
+
+                ||
+
+                (category.description || "")
+                    .toLowerCase()
+                    .includes(search)
+            );
+
+        });
+
+
+    displayCategories(filtered);
+
+});
+
+
+// Basic HTML escaping
+function escapeHtml(value) {
+
+    if (value === null || value === undefined) {
+        return "";
+    }
+
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+}
+
+
+// Initial load
+loadCategories();
+
+</script>
+</body>
+</html>

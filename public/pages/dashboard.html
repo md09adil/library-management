@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Dashboard - Library Management System</title>
+
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+
+<body>
+    <aside class="sidebar">
+
+    <div class="sidebar-logo">
+        📚 <span>Library System</span>
+    </div>
+
+    <nav class="sidebar-menu">
+
+        <a href="/dashboard" class="active">
+            🏠 Dashboard
+        </a>
+
+        <a href="/pages/books.html">
+            📚 Books
+        </a>
+
+        <a href="/pages/students.html">
+            👨‍🎓 Members
+        </a>
+
+        <a href="/pages/categories.html">
+            🗂️ Categories
+        </a>
+
+        <a href="/pages/issues.html">
+            🔄 Issue / Return
+        </a>
+
+        <a href="/reports">
+            📊 Reports
+        </a>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+
+        <button
+            onclick="logout()"
+            class="sidebar-logout">
+            🚪 Logout
+        </button>
+
+    </div>
+
+</aside>
+
+    <div class="dashboard">
+
+        <header class="topbar">
+            <div>
+                <h1>📚 Library Management System</h1>
+                <p>Dashboard</p>
+            </div>
+
+            <button id="logoutBtn" class="logout-btn">
+                Logout
+            </button>
+        </header>
+
+
+        <main class="dashboard-content">
+
+            <h2>Welcome, Admin</h2>
+
+            <div class="stats-grid">
+
+                <div class="stat-card">
+                    <h3>Total Books</h3>
+                    <p id="totalBooks">0</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Available Books</h3>
+                    <p id="availableBooks">0</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Issued Books</h3>
+                    <p id="issuedBooks">0</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>Total Members</h3>
+                    <p id="totalMembers">0</p>
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-section">
+
+                <h2>Quick Actions</h2>
+
+                <div class="quick-actions">
+
+                    <button>
+                        📖 Manage Books
+                    </button>
+
+                    <button>
+                        👨‍🎓 Manage Members
+                    </button>
+
+                    <button>
+                        📤 Issue Book
+                    </button>
+
+                    <button>
+                        📥 Return Book
+                    </button>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        document.getElementById("logoutBtn").addEventListener("click", async () => {
+
+            await fetch("/logout", {
+                method: "POST"
+            });
+
+            window.location.href = "/";
+        });
+async function loadDashboardStats() {
+
+    try {
+
+        const response = await fetch("/api/dashboard");
+
+        if (!response.ok) {
+            throw new Error("Failed to load dashboard");
+        }
+
+        const data = await response.json();
+
+        document.getElementById("totalBooks").textContent =
+            data.totalBooks;
+
+        document.getElementById("availableBooks").textContent =
+            data.availableBooks;
+
+        document.getElementById("issuedBooks").textContent =
+            data.issuedBooks;
+
+        document.getElementById("totalMembers").textContent =
+            data.totalMembers;
+
+    } catch (error) {
+
+        console.error("Dashboard error:", error);
+
+    }
+}
+
+loadDashboardStats();
+    </script>
+</body>
+</html>
